@@ -13,11 +13,13 @@ import com.example.alertdialog.data.Task
 import com.example.alertdialog.data.TaskList
 import com.example.alertdialog.databinding.ActivityMainBinding
 import com.example.alertdialog.databinding.DialogTaskBinding
+import com.example.alertdialog.viewmodel.TaskListViewModel
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding:ActivityMainBinding
     private lateinit var dialogTaskBinding: DialogTaskBinding
+    private lateinit var taskListViewModel: TaskListViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -32,14 +34,16 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        initRecycler(TaskList.listOfTasks)
+        taskListViewModel = TaskListViewModel()
+        taskListViewModel.taskList.observe(this){ task ->
+            initRecycler(TaskList.listOfTasks)
+        }
 
         setListener(alertDialog)
 
     }
 
     fun initRecycler(taskList:List<Task>){
-
         binding.rvTasks.layoutManager = LinearLayoutManager(this)
         binding.rvTasks.adapter = TaskListAdapter(taskList)
     }
@@ -59,17 +63,11 @@ class MainActivity : AppCompatActivity() {
             val description = addDescriptionTask()
 
             if(!title.isNullOrEmpty() && !description.isNullOrEmpty()){
-                saveTask(title, description)
+                taskListViewModel.addTask(title, description)
                 clearEditText()
                 alertDialog.dismiss()
             }
         }
-    }
-
-    fun saveTask(title: String, description: String){
-        val task = Task(title, description)
-
-        TaskList.addTask(task)
     }
 
     fun addTitleTask(): String{
